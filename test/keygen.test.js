@@ -1,4 +1,3 @@
-// deactivate
 // CLIENT SIDE VERSION that doesn't have admin token
 // DEMO SCRIPT
 
@@ -135,10 +134,8 @@ test("reactivate license", async function () {
 
     keygen.machine_id = activation.attributes.fingerprint;
     const reactivation = await keygen.activateLicense(token.attributes.token, license.id);
-    console.log(reactivation);
     expect(reactivation).toBeInstanceOf(Object);
     expect(reactivation.id.length).toBeGreaterThan(0);
     expect(reactivation.type).toBe("machines");
     expect(reactivation.attributes.fingerprint.length).toBeGreaterThan(0);
 });
-

@@ -2,7 +2,7 @@ import fetch from "node-fetch"
 import https from "https";
 import debug from "debug";
 const log = debug("keygen.js");
-import { machineIdSync } from 'node-machine-id';
+import nodeMachineId from "node-machine-id";
 
 
 export default class Keygen {
@@ -14,7 +14,7 @@ export default class Keygen {
         this.account_id = config.account_id;
         if (!this.account_id) throw new Error("Missing account_id");
 
-        this.machine_id = config.machine_id || machineIdSync();
+        this.machine_id = config.machine_id || nodeMachineId.machineIdSync();
         if (!this.machine_id) throw new Error("Missing machine_id");
     }
 
