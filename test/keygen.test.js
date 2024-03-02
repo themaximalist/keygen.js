@@ -41,6 +41,16 @@ test("create product", async function () {
     expect(product.attributes.name).toBe("HyperTyper");
 });
 
+test("list products", async function () {
+    expect(token).toBeInstanceOf(Object);
+    expect(product).toBeInstanceOf(Object);
+
+    const products = await keygen.getProducts(token.attributes.token);
+    expect(products).toBeInstanceOf(Array);
+    expect(products.length).toBeGreaterThan(0);
+    expect(products[0].attributes.name).toBe("HyperTyper");
+});
+
 test("create paid policy", async function () {
     expect(token).toBeInstanceOf(Object);
     expect(product).toBeInstanceOf(Object);
@@ -55,6 +65,21 @@ test("create paid policy", async function () {
     expect(paid_policy.attributes.max_machines).toBe(policy.max_machines);
     expect(paid_policy.attributes.machineUniquenessStrategy).toBe(policy.machineUniquenessStrategy);
     expect(paid_policy.attributes.floating).toBe(policy.floating);
+});
+
+test("list policies", async function () {
+    expect(token).toBeInstanceOf(Object);
+    expect(product).toBeInstanceOf(Object);
+    const policies = await keygen.getPolicies(token.attributes.token, product.id);
+    expect(policies).toBeInstanceOf(Array);
+    expect(policies.length).toBe(1);
+    expect(policies[0].id.length).toBeGreaterThan(0);
+    expect(policies[0].type).toBe("policies");
+    expect(policies[0].attributes.name).toBe(Keygen.PAID_POLICY.name);
+    expect(policies[0].attributes.duration).toBe(Keygen.PAID_POLICY.duration);
+    expect(policies[0].attributes.max_machines).toBe(Keygen.PAID_POLICY.max_machines);
+    expect(policies[0].attributes.machineUniquenessStrategy).toBe(Keygen.PAID_POLICY.machineUniquenessStrategy);
+    expect(policies[0].attributes.floating).toBe(Keygen.PAID_POLICY.floating);
 });
 
 test("create license", async function () {
