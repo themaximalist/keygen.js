@@ -2,6 +2,8 @@ import fetch from "node-fetch"
 import https from "https";
 import debug from "debug";
 const log = debug("keygen.js");
+import { machineIdSync } from 'node-machine-id';
+
 
 export default class Keygen {
     constructor(config = {}) {
@@ -11,6 +13,9 @@ export default class Keygen {
 
         this.account_id = config.account_id;
         if (!this.account_id) throw new Error("Missing account_id");
+
+        this.machine_id = config.machine_id || machineIdSync();
+        if (!this.machine_id) throw new Error("Missing machine_id");
     }
 
     async createToken(email, password) {
@@ -19,16 +24,18 @@ export default class Keygen {
     }
 
     async createProduct(api_key, attributes = {}) {
-        const body = { "type": "product", attributes };
+        const body = { data: { "type": "product", attributes } };
         return await this.fetch({ endpoint: "products", api_key, body });
     }
 
     async createPolicy(api_key, product_id, attributes = {}) {
         const body = {
-            "type": "policy",
-            attributes,
-            "relationships": {
-                "product": { "data": { "type": "product", "id": product_id } }
+            data: {
+                "type": "policy",
+                attributes,
+                "relationships": {
+                    "product": { "data": { "type": "product", "id": product_id } }
+                }
             }
         };
 
@@ -37,59 +44,61 @@ export default class Keygen {
 
     async createLicense(api_key, policy_id, metadata = null) {
         const body = {
-            "type": "license",
-            "attributes": {},
-            "relationships": {
-                "policy": { "data": { "type": "policy", "id": policy_id } }
+            data: {
+                "type": "license",
+                "attributes": {},
+                "relationships": {
+                    "policy": { "data": { "type": "policy", "id": policy_id } }
+                }
             }
         };
 
         if (metadata) {
-            body.attributes.metadata = metadata;
+            body.data.attributes.metadata = metadata;
         }
 
         return await this.fetch({ endpoint: "licenses", api_key, body });
     }
 
-    /*
-    async createLicense(api_key, attributes = {}) {
-        // const body = { "type": "product", attributes };
+    async validateLicense(api_key, license) {
         const body = {
-            "type": "license",
-            "attributes": {},
-            "relationships": {
-                "policy": {
-                    "data": {
-                        "type": "policy",
-                        "id": "5dc97f67-5905-439f-81ab-5e43b42bfb94"
-                    }
+            "meta": { "key": license }
+        }
+
+        return await this.fetch({ endpoint: "licenses/actions/validate-key", api_key, body });
+    }
+
+    async activateLicense(api_key, license) {
+        const body = {
+            "data": {
+                "type": "machines",
+                "attributes": { "fingerprint": this.machine_id },
+                "relationships": {
+                    "license": { "data": { "type": "licenses", "id": license } }
                 }
             }
-        }
-    
+        };
+
+        return await this.fetch({ endpoint: "machines", api_key, body });
+    }
+
+    async deactivateLicense(api_key, activation_id) {
         return await this.fetch({
-            endpoint: "licenses",
+            endpoint: `machines/${activation_id}`,
+            method: "DELETE",
             api_key,
-            body
         });
     }
-    */
-
-    /*
-       -d '{
-         "data": 
-       }'
-       */
 
     url(path) {
         return `${this.base_url}/v1/accounts/${this.account_id}/${path}`;
     }
 
-    async fetch({ endpoint, api_key, body, auth = "Bearer" } = {}) {
+    async fetch({ endpoint, api_key, body, method = "POST", auth = "Bearer" } = {}) {
         const url = this.url(endpoint);
 
         const options = {
-            method: "POST",
+            method,
             headers: {
                 "Accept": "application/vnd.api+json",
                 "Content-Type": "application/vnd.api+json",
@@ -98,7 +107,7 @@ export default class Keygen {
         };
 
         if (body) {
-            options.body = JSON.stringify({ data: body });
+            options.body = JSON.stringify(body);
         }
 
         if (this.ignore_ssl) {
@@ -109,28 +118,29 @@ export default class Keygen {
 
         const response = await fetch(url, options)
 
-        const { data, errors } = await response.json()
+        if (response.status === 204) { // no content
+            return {};
+        }
+
+        const { meta, data, errors } = await response.json()
         if (errors) {
+            // console.log("ERRORS", errors);
             const err = `Error: ${errors[0].title} - ${errors[0].detail}`
             throw new Error(err);
+        }
+
+        if (meta && Object.keys(meta).length > 0) {
+            return meta;
         }
 
         return data;
     }
 }
 
-Keygen.TRIAL_POLICY = {
-    "name": "Trial Policy",
-    "duration": 604800,
-    "maxMachines": 1,
-    "machineUniquenessStrategy": "UNIQUE_PER_POLICY"
-};
-
 Keygen.PAID_POLICY = {
     "name": "Paid Policy",
     "duration": null,
     "maxMachines": 5,
     "floating": true,
-    "transferStrategy": "RESET_EXPIRY",
     "machineUniquenessStrategy": "UNIQUE_PER_POLICY"
 };
