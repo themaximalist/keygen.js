@@ -1,6 +1,3 @@
-// CLIENT SIDE VERSION that doesn't have admin token
-// DEMO SCRIPT
-
 import { test, expect, vi } from "vitest";
 import Keygen from "../src/index.js";
 import dotenv from "dotenv-extended";
