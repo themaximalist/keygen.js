@@ -3,6 +3,7 @@
 // VALIDATE LICENSE
 // ACTIVATE MACHINE
 // TRIAL -> PAID conversion
+// DEMO SCRIPT
 
 import { test, expect } from "vitest";
 import Keygen from "../src/index.js";
@@ -29,10 +30,17 @@ test("create token", async function () {
     expect(token.attributes.expiry).toBe(null);
 });
 
-test.only("create product", async function () {
+test("create product", async function () {
     const keygen = new Keygen({ account_id, ignore_ssl: true });
     const token = await keygen.createToken(user_email, user_password);
     const key = token.attributes.token;
     expect(key.length).toBeGreaterThan(0);
-    console.log(key);
+
+    const product = await keygen.createProduct(key, {
+        "name": "HyperTyper"
+    });
+    expect(product).toBeInstanceOf(Object);
+    expect(product.id.length).toBeGreaterThan(0);
+    expect(product.type).toBe("products");
+    expect(product.attributes.name).toBe("HyperTyper");
 });
