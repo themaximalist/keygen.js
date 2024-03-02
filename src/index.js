@@ -60,12 +60,12 @@ export default class Keygen {
         return await this.fetch({ endpoint: "licenses", api_key, body });
     }
 
-    async validateLicense(api_key, license) {
+    async validateLicense(license) {
         const body = {
             "meta": { "key": license }
         }
 
-        return await this.fetch({ endpoint: "licenses/actions/validate-key", api_key, body });
+        return await this.fetch({ endpoint: "licenses/actions/validate-key", body });
     }
 
     async activateLicense(api_key, license) {
@@ -94,7 +94,7 @@ export default class Keygen {
         return `${this.base_url}/v1/accounts/${this.account_id}/${path}`;
     }
 
-    async fetch({ endpoint, api_key, body, method = "POST", auth = "Bearer" } = {}) {
+    async fetch({ endpoint, api_key = null, body = null, method = "POST", auth = "Bearer" } = {}) {
         const url = this.url(endpoint);
 
         const options = {
@@ -102,9 +102,12 @@ export default class Keygen {
             headers: {
                 "Accept": "application/vnd.api+json",
                 "Content-Type": "application/vnd.api+json",
-                "Authorization": `${auth} ${api_key}`
             }
         };
+
+        if (api_key) {
+            options.headers["Authorization"] = `${auth} ${api_key}`;
+        }
 
         if (body) {
             options.body = JSON.stringify(body);

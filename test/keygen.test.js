@@ -75,13 +75,25 @@ test("create license", async function () {
     expect(license.attributes.metadata.email).toBe("test@themaximalist.com");
 });
 
+test("invalid license", async function () {
+    expect(token).toBeInstanceOf(Object);
+    expect(product).toBeInstanceOf(Object);
+    expect(paid_policy).toBeInstanceOf(Object);
+    expect(license).toBeInstanceOf(Object);
+
+    const validation = await keygen.validateLicense("invalid-key");
+    expect(validation).toBeInstanceOf(Object);
+    expect(validation.valid).toBe(false);
+    expect(validation.code).toBe("NOT_FOUND");
+});
+
 test("validate license", async function () {
     expect(token).toBeInstanceOf(Object);
     expect(product).toBeInstanceOf(Object);
     expect(paid_policy).toBeInstanceOf(Object);
     expect(license).toBeInstanceOf(Object);
 
-    const validation = await keygen.validateLicense(token.attributes.token, license.attributes.key);
+    const validation = await keygen.validateLicense(license.attributes.key);
     expect(validation).toBeInstanceOf(Object);
     expect(validation.valid).toBe(true);
     expect(validation.code).toBe("VALID");

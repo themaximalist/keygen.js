@@ -32,10 +32,23 @@ console.log("CREATING PAID POLICY");
 const policy = await keygen.createPolicy(api_key, product.id, Keygen.PAID_POLICY);
 console.log("CREATED PAID POLICY", policy.id);
 
+let license = null;
+if (await prompt("Do you want to create a license? (y/n)") === "y") {
+    console.log("CREATING LICENSE");
+
+    license = await keygen.createLicense(api_key, policy.id, {
+        email: await prompt("License email")
+    });
+}
+
 console.log("\n\n-------------------- FINISHED --------------------");
 console.log(`ACCOUNT_ID: ${account_id}`);
 console.log(`API_KEY: ${api_key}`);
 console.log(`PRODUCT_NAME: ${product.attributes.name}`);
 console.log(`PRODUCT_ID: ${product.id}`);
 console.log(`PAID_POLICY_ID: ${policy.id}`);
+if (license) {
+    console.log(`LICENSE_KEY: ${license.attributes.key}`);
+    console.log(`LICENSE_EMAIL: ${license.attributes.metadata.email}`);
+}
 console.log("-------------------- FINISHED --------------------\n\n");
