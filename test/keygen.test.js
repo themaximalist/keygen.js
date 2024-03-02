@@ -5,6 +5,8 @@
 // DEFAULT POLICIES (TRIAL/PAID)
 // DEMO SCRIPT
 
+// CLIENT SIDE VERSION that doesn't have admin token
+
 import { test, expect, vi } from "vitest";
 import Keygen from "../src/index.js";
 import dotenv from "dotenv-extended";
@@ -75,14 +77,21 @@ test("create paid policy", async function () {
     // expect(paid_policy.attributes.transferStrategy).toBe(Keygen.PAID_POLICY.transferStrategy); // TODO: bugged or works as expected?
 });
 
-test.skip("create license", async function () {
-    const keygen = new Keygen({ account_id, ignore_ssl: true });
-    const token = await keygen.createToken(user_email, user_password);
-    const key = token.attributes.token;
-    const product = await keygen.createProduct(key, { "name": "HyperTyper" });
-    const license = await keygen.createLicense(key, product.id, {
-        // "metadata": { "key": "value" }
-    });
+test("create license", async function () {
+    expect(token).toBeInstanceOf(Object);
+    expect(product).toBeInstanceOf(Object);
+    expect(trial_policy).toBeInstanceOf(Object);
+    expect(paid_policy).toBeInstanceOf(Object);
 
-    console.log("LICENSE", license);
+    // const key = token.attributes.token;
+    const license = await keygen.createLicense(token.attributes.token, trial_policy.id, {
+        user: "test@themaximalist.com"
+    });
+    expect(license).toBeInstanceOf(Object);
+    expect(license.id.length).toBeGreaterThan(0);
+    expect(license.type).toBe("licenses");
+    expect(license.attributes.key.length).toBeGreaterThan(0);
+    expect(license.attributes.expiry).not.toBe(null);
+    expect(license.attributes.status).toBe("ACTIVE");
+    expect(license.attributes.uses).toBe(0);
 });

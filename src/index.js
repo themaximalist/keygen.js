@@ -15,20 +15,12 @@ export default class Keygen {
 
     async createToken(email, password) {
         const api_key = Buffer.from(`${email}:${password}`).toString("base64")
-        return await this.fetch({
-            endpoint: "tokens",
-            api_key,
-            auth: "Basic"
-        });
+        return await this.fetch({ endpoint: "tokens", api_key, auth: "Basic" });
     }
 
     async createProduct(api_key, attributes = {}) {
         const body = { "type": "product", attributes };
-        return await this.fetch({
-            endpoint: "products",
-            api_key,
-            body
-        });
+        return await this.fetch({ endpoint: "products", api_key, body });
     }
 
     async createPolicy(api_key, product_id, attributes = {}) {
@@ -36,17 +28,27 @@ export default class Keygen {
             "type": "policy",
             attributes,
             "relationships": {
-                "product": {
-                    "data": { "type": "product", "id": product_id }
-                }
+                "product": { "data": { "type": "product", "id": product_id } }
             }
         };
 
-        return await this.fetch({
-            endpoint: "policies",
-            api_key,
-            body
-        });
+        return await this.fetch({ endpoint: "policies", api_key, body });
+    }
+
+    async createLicense(api_key, policy_id, metadata = null) {
+        const body = {
+            "type": "license",
+            "attributes": {},
+            "relationships": {
+                "policy": { "data": { "type": "policy", "id": policy_id } }
+            }
+        };
+
+        if (metadata) {
+            body.attributes.metadata = metadata;
+        }
+
+        return await this.fetch({ endpoint: "licenses", api_key, body });
     }
 
     /*
@@ -64,7 +66,7 @@ export default class Keygen {
                 }
             }
         }
-
+    
         return await this.fetch({
             endpoint: "licenses",
             api_key,
