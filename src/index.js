@@ -32,8 +32,8 @@ export default class Keygen {
         return await this.fetch({ endpoint: `products?limit=${limit}`, api_key, method: "GET" });
     }
 
-    async getProduct(api_key, product, limit = 100) {
-        return await this.fetch({ endpoint: `products/${product}`, api_key, method: "GET" });
+    async getProduct(api_key, product_id) {
+        return await this.fetch({ endpoint: `products/${product_id}`, api_key, method: "GET" });
     }
 
     async createPolicy(api_key, product_id, attributes = {}) {
@@ -50,8 +50,8 @@ export default class Keygen {
         return await this.fetch({ endpoint: "policies", api_key, body });
     }
 
-    async getPolicies(api_key, product, limit = 100) {
-        return await this.fetch({ endpoint: `policies?product=${product}&limit=${limit}`, api_key, method: "GET" });
+    async getPolicies(api_key, product_id, limit = 100) {
+        return await this.fetch({ endpoint: `policies?product=${product_id}&limit=${limit}`, api_key, method: "GET" });
     }
 
     async createLicense(api_key, policy_id, metadata = null) {
@@ -72,11 +72,11 @@ export default class Keygen {
         return await this.fetch({ endpoint: "licenses", api_key, body });
     }
 
-    async getLicenses(api_key, product, limit = 100) {
-        return await this.fetch({ endpoint: `licenses?product=${product}&limit=${limit}`, api_key, method: "GET" });
+    async getLicenses(api_key, product_id, limit = 100) {
+        return await this.fetch({ endpoint: `licenses?product=${product_id}&limit=${limit}`, api_key, method: "GET" });
     }
 
-    async getLicense(api_key, license_id, limit = 100) {
+    async getLicense(api_key, license_id) {
         return await this.fetch({ endpoint: `licenses/${license_id}`, api_key, method: "GET" });
     }
 
