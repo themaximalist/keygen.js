@@ -173,3 +173,35 @@ test("reactivate license", async function () {
     expect(reactivation.type).toBe("machines");
     expect(reactivation.attributes.fingerprint.length).toBeGreaterThan(0);
 });
+
+test("delete license", async function () {
+    expect(token).toBeInstanceOf(Object);
+    expect(product).toBeInstanceOf(Object);
+    expect(paid_policy).toBeInstanceOf(Object);
+
+    const license1 = await keygen.createLicense(token.attributes.token, paid_policy.id, {
+        email: "test1@themaximalist.com"
+    });
+
+    const license2 = await keygen.createLicense(token.attributes.token, paid_policy.id, {
+        email: "test2@themaximalist.com"
+    });
+
+    let licenses;
+    licenses = await keygen.getLicenses(token.attributes.token, product.id);
+    expect(licenses.length).toBe(3);
+
+    await keygen.deleteLicense(token.attributes.token, license1.id);
+
+    licenses = await keygen.getLicenses(token.attributes.token, product.id);
+    expect(licenses.length).toBe(2);
+
+    await keygen.validateLicense(token.attributes.token, license2.id);
+
+    try {
+        await keygen.validateLicense(token.attributes.token, license2.id);
+        expect.fail("should have been deleted");
+    } catch (e) {
+        expect(e).toBeInstanceOf(Error);
+    }
+});

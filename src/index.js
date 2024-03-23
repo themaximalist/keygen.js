@@ -80,6 +80,10 @@ export default class Keygen {
         return await this.fetch({ endpoint: `licenses/${license_id}`, api_key, method: "GET" });
     }
 
+    async deleteLicense(api_key, license_id) {
+        return await this.fetch({ endpoint: `licenses/${license_id}`, api_key, method: "DELETE" });
+    }
+
     async validateLicense(license) {
         const body = {
             "meta": { "key": license }
